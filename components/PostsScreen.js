@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, FlatList, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { View, Text, Button, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 
-const PostsScreen = ({ navigation }) => {
-  const [posts, setPosts] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
+const PostsScreen = ({ navigation, dispatch, posts }) => {
   const [page, setPage] = useState(1);
+  const [refreshing, setRefreshing] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
   const fetchPosts = () => {
     setRefreshing(true);
-    fetch('https://jsonplaceholder.typicode.com/posts')
-      .then((response) => response.json())
-      .then((json) => setPosts(json))
-      .catch((error) => {
-        console.error(error);
-        Alert.alert('An error occurred while fetching the posts.');
-      })
-      .finally(() => setRefreshing(false));
+    dispatch({ type: 'FETCH_POSTS_REQUEST' });
+    setRefreshing(false);
   };
 
-  const paginatedPosts = posts.slice(0, page * ITEMS_PER_PAGE);
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   const handleLoadMore = () => {
     if (page * ITEMS_PER_PAGE < posts.length) {
@@ -27,9 +23,7 @@ const PostsScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  const paginatedPosts = posts.slice(0, page * ITEMS_PER_PAGE);
 
   return (
     <View>
@@ -39,8 +33,8 @@ const PostsScreen = ({ navigation }) => {
         keyExtractor={({ id }) => id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => navigation.navigate('PostDetails', { post: item })}
             style={styles.listItem}
+            onPress={() => navigation.navigate('PostDetails', { post: item })}
           >
             <Text style={styles.title}>{item.title}</Text>
             <Text>{item.body}</Text>
@@ -57,7 +51,11 @@ const PostsScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   listItem: { padding: 16, borderBottomWidth: 1 },
-  title: { fontWeight: 'bold' }
+  title: { fontWeight: 'bold' },
 });
 
-export default PostsScreen;
+const mapStateToProps = (state) => ({
+  posts: state.posts,
+});
+
+export default connect(mapStateToProps)(PostsScreen);

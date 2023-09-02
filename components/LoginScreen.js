@@ -7,10 +7,10 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = () => {
     if (username === 'testuser' && password === 'password') {
-      Alert.alert('Login successful');
+      Alert.alert('Login successful', 'You have successfully logged in!');
       navigation.navigate('Posts');
     } else {
-      Alert.alert('Login failed');
+      Alert.alert('Login failed', 'Invalid username or password!');
     }
   };
 
